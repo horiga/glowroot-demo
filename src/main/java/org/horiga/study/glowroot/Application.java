@@ -27,16 +27,16 @@ public class Application {
     @Data
     static class Properties {
 
-        String endpoint = "https://notify-api.line.me";
+        private String endpoint = "https://notify-api.line.me";
 
         @NotNull
-        String accessToken;
+        private String accessToken;
 
         @NestedConfigurationProperty
-        Http http;
+        private Http http;
 
         @Data
-        static class Http {
+        public static class Http {
             int connectTimeout = 3000;
             int readTimeout = 3000;
             Boolean retryOnConnectionFailure = Boolean.FALSE;

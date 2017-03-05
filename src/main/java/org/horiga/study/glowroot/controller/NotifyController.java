@@ -1,4 +1,4 @@
-package org.horiga.study.glowroot;
+package org.horiga.study.glowroot.controller;
 
 import java.util.concurrent.Callable;
 
@@ -7,16 +7,14 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
+import org.horiga.study.glowroot.service.NotifyHandler;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -35,6 +33,7 @@ public class NotifyController {
             String EVENT = "event";
         }
 
+        @SuppressWarnings("unused")
         public interface Priority {
             String HIGH = "high";
             String MEDIUM = "medium";
@@ -65,25 +64,22 @@ public class NotifyController {
 
         @JsonProperty("priority")
         private String priority = Priority.MEDIUM;
-
-        
-    }
-
-    @Getter
-    @Builder
-    public static class ErrorMessage implements ResponseMessage {
-        @JsonProperty("error")
-        private String error;
-        @JsonProperty("error_description")
-        private String errorDescription;
     }
 
     public static final ResponseMessage DEFAULT_SUCCESS = new ResponseMessage() {};
 
+    private final NotifyHandler handler;
+
+    NotifyController(NotifyHandler handler) {
+        this.handler = handler;
+    }
+
     @PostMapping("/event")
     public Callable<ResponseEntity<ResponseMessage>> onEvent(
-            @Valid Message message,
-            BindingResult bindings) throws Exception {
-        return () -> ResponseEntity.ok(DEFAULT_SUCCESS);
+            @Valid Message message) throws Exception {
+        return () -> {
+            handler.onMessage(message);
+            return ResponseEntity.ok(DEFAULT_SUCCESS);
+        };
     }
 }
