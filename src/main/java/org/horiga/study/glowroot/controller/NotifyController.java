@@ -1,5 +1,6 @@
 package org.horiga.study.glowroot.controller;
 
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 import javax.validation.Valid;
@@ -8,20 +9,39 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.horiga.study.glowroot.service.NotifyHandler;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
 public class NotifyController {
 
-    public interface ResponseMessage {}
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static class ResponseMessage<T> {
+
+        public static final String SUCCESS_VALUE = "success";
+
+        private String status;
+        private T content;
+
+        static ResponseMessage success() {
+            return new ResponseMessage<Object>(SUCCESS_VALUE, new HashMap<String, Object>(0));
+        }
+
+        static <T> ResponseMessage success(T content) {
+            return new ResponseMessage<Object>(SUCCESS_VALUE, content);
+        }
+    }
 
     @Data
     public static class Message {
@@ -66,20 +86,18 @@ public class NotifyController {
         private String priority = Priority.MEDIUM;
     }
 
-    public static final ResponseMessage DEFAULT_SUCCESS = new ResponseMessage() {};
-
     private final NotifyHandler handler;
 
     NotifyController(NotifyHandler handler) {
         this.handler = handler;
     }
 
-    @PostMapping("/event")
-    public Callable<ResponseEntity<ResponseMessage>> onEvent(
-            @Valid Message message) throws Exception {
+    @PostMapping("/api/event")
+    public Callable<ResponseMessage> onEvent(
+            @Valid @RequestBody Message message) throws Exception {
         return () -> {
             handler.onMessage(message);
-            return ResponseEntity.ok(DEFAULT_SUCCESS);
+            return ResponseMessage.success();
         };
     }
 }

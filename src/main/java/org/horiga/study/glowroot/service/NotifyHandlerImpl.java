@@ -17,6 +17,6 @@ public class NotifyHandlerImpl implements NotifyHandler {
     }
 
     public void onMessage(Message message) {
-        log.info("onMessage", message);
+        log.info("onMessage: {}", message);
     }
 }

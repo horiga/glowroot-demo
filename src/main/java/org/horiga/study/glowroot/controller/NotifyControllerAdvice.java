@@ -16,7 +16,7 @@ public class NotifyControllerAdvice {
 
     @Getter
     @Builder
-    public static class ErrorMessage implements ResponseMessage {
+    public static class ErrorMessage extends ResponseMessage {
         @JsonProperty("error")
         private String error;
         @JsonProperty("error_description")
